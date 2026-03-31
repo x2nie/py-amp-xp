@@ -189,3 +189,45 @@ class TestResolveSemantic(JsonTestCase):
             }
         ]
         """)
+
+
+    def test_unknown_property(self):
+        text = """
+        @type
+        glyph
+            width int
+
+        @glyph
+        A widht 10
+        """
+
+        ast = self.pipeline(text)
+
+        # print((ast["children"][0]["errors"]), 1)
+        # self.assertEqual(repr(ast["children"][0]["errors"]), 1)
+        #  [{'message': 'Unknown property: widht', 'foo': 3, 'line': 6}, {'message': 'Unknown property: 10', 'foo': 3, 'line': 6}] 1
+        self.assertEqual(len(ast["children"][0]["errors"]), 2)
+
+    def test_missing_value(self):
+        text = """
+        @type
+        glyph
+            width int
+
+        @glyph
+        A width
+        """
+
+        ast = self.pipeline(text)
+
+        self.assertEqual(len(ast["children"][0]["errors"]), 1)        
+
+    def test_unknown_type(self):
+        text = """
+        @unknown
+        A x 1
+        """
+
+        ast = self.pipeline(text)
+
+        self.assertEqual(len(ast["children"][0]["errors"]), 1)

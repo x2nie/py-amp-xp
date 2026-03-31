@@ -60,7 +60,8 @@ def structure(tokens):
                 "type": t["name"],
                 "subject": None,
                 "args": t["args"][:] if t["name"] == "include" else [],
-                "children": []
+                "children": [],
+                "line": t["line"],
             }
             root["children"].append(node)
             active_decorator = node
@@ -91,6 +92,7 @@ def structure(tokens):
         node = {
             "kind": "Words",
             "tokens": t["tokens"],
+            "line": t["line"],
             "children": []
         }
 
@@ -143,6 +145,7 @@ def declarative(tree):
                 "type": node["type"],
                 "subject": node.get("subject"),
                 "args": node.get("args", []),
+                "line": node.get("line"),
                 "children": node.get("children", [])
             })
 
@@ -157,6 +160,7 @@ def resolve(ast, registry):
     new_children = []
 
     for node in ast.get("children", []):
+        errs = []
         t = node.get("type")
 
         if t in ("include", "skin"):
@@ -165,7 +169,20 @@ def resolve(ast, registry):
 
         schema = registry.get(t)
         if not schema:
-            continue  # atau nanti bisa jadi error
+            # continue  # atau nanti bisa jadi error
+            errs.append({
+                "message": f"Unknown type: {t}",
+                "foo": 1,
+                "line": node.get("line")
+            })
+            new_children.append({
+                "type": t,
+                "name": node.get("subject"),
+                "props": {},
+                "children": [],
+                "errors": errs
+            })
+            continue
 
         parts = [node.get("subject")] + node.get("args", [])
         name = parts[0]
@@ -177,8 +194,22 @@ def resolve(ast, registry):
             i += 1
             arity = len(schema.get(key, []))
 
-            if arity > 0:
-                props[key] = parts[i:i + arity]
+            if key not in schema:
+                errs.append({
+                    "message": f"Unknown property: {key}",
+                    "foo": 3,
+                    "line": node.get("line")
+                })
+                continue
+
+            if i + arity > len(parts):
+                errs.append({
+                    "message": f"Missing value for {key}",
+                    "line": node.get("line")
+                })
+                break
+
+            props[key] = parts[i:i + arity]
             i += arity
 
         children = []
@@ -190,20 +221,36 @@ def resolve(ast, registry):
             target = toks[0]
 
             p = {}
+            child_errs = []
             i = 1
             while i < len(toks):
                 key = toks[i]
                 i += 1
                 arity = len(schema.get(key, []))
 
-                if arity > 0:
-                    p[key] = toks[i:i + arity]
+                if key not in schema:
+                    child_errs.append({
+                        "message": f"Unknown property: {key}",
+                        "foo": 2,
+                        "line": w.get("line")
+                    })
+                    continue
+
+                if i + arity > len(toks):
+                    child_errs.append({
+                        "message": f"Missing value for {key}",
+                        "line": w.get("line")
+                    })
+                    break
+
+                p[key] = toks[i:i + arity]
                 i += arity
 
             children.append({
                 "type": t + ".child",
                 "target": target,
                 "props": p,
+                "errors": child_errs,
                 "children": []
             })
 
@@ -212,7 +259,8 @@ def resolve(ast, registry):
             "name": name,
             "props": props,
             "children": children,
-            "schema": schema
+            "schema": schema,
+            "errors": errs
         })
 
     ast["children"] = new_children
