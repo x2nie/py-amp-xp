@@ -28,8 +28,8 @@ class TestLex(unittest.TestCase):
         text = "    a b\n        c d"
         result = lex(text)
 
-        self.assertEqual(result[0]["indent"], 1)
-        self.assertEqual(result[1]["indent"], 2)
+        self.assertEqual(result[0]["indent"], 0)
+        self.assertEqual(result[1]["indent"], 1)
 
     def test_decorator(self):
         text = "@type font.bitmap"
@@ -46,13 +46,13 @@ class TestLex(unittest.TestCase):
         self.assertEqual(result[0]["tokens"], ["a", "b", "c"])
 
     def test_mixed_lines(self):
-        text = """
-@type font.bitmap
-    size int
-    width int
+        text = '''
+        @type font.bitmap
+            size int
+            width int
 
-glyph A width 10
-        """
+        glyph A width 10
+        '''
 
         result = lex(text)
 

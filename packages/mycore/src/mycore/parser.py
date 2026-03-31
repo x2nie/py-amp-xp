@@ -4,15 +4,19 @@ import re
 def lex(text):
     lines = text.split("\n")
     result = []
+    skips = -1 # soon changed. needed by python unittest to allow indented code
 
     for i, line in enumerate(lines):
         if not line.strip():
             continue
 
+        if skips <= 0:
+            skips = len(line) - len(line.lstrip())
+
         # remove comment after "
         line = re.sub(r'".*$', '', line)
 
-        indent = len(re.match(r'^\s*', line).group(0)) // 4
+        indent = ( -skips + len(re.match(r'^\s*', line).group(0))) // 4
         raw = line.strip()
 
         if raw.startswith('@'):
