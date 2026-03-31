@@ -7,7 +7,8 @@ class TestStructure(JsonTestCase):
 
     def test_simple(self):
         text = """
-@type font.bitmap
+@type 
+font.bitmap
     size int
 """
         tree = structure(lex(text))
@@ -42,6 +43,12 @@ class TestStructure2(unittest.TestCase):
     def test_single_decorator(self):
         text = "@type font.bitmap"
         tree = structure(lex(text))
+        self.assertRaises(Exception)
+
+
+    def test_simple_decorator(self):
+        text = "@type\n" "font.bitmap"
+        tree = structure(lex(text))
 
         self.assertEqual(len(tree["children"]), 1)
         node = tree["children"][0]
@@ -52,7 +59,8 @@ class TestStructure2(unittest.TestCase):
 
     def test_type_with_fields(self):
         text = """
-@type font.bitmap
+@type
+font.bitmap
     size int
     width int
 """
