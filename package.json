@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build:core": "cd packages/mycore && transcrypt -b -n src/mycore/__init__.py",
+    "build:web": "cd packages/webapp && npm run build",
+    "build": "npm run build:core && npm run build:web"
+  }
+}

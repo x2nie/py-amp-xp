@@ -1,0 +1,7 @@
+{
+  "name": "webapp",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Build webapp here (e.g. vite build)'"
+  }
+}

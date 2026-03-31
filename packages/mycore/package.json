@@ -1,0 +1,5 @@
+{
+  "name": "mycore",
+  "version": "1.0.0",
+  "main": "dist/mycore.js"
+}
