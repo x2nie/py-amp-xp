@@ -126,7 +126,8 @@ def declarative(tree):
             if not schema:
                 continue
 
-            parts = re.split(r"\s+", str(node["subject"]))
+            # parts = re.split(r"\s+", str(node["subject"]))
+            parts = [node["subject"]] + node.get("args", [])
             name = parts[0]
 
             props = {}
@@ -137,7 +138,8 @@ def declarative(tree):
                 arity = len(schema.get(key, []))
 
                 if arity > 0:
-                    props[key] = list(map(int, parts[i:i + arity]))
+                    # props[key] = list(map(int, parts[i:i + arity]))
+                    props[key] = parts[i:i + arity]
                 i += arity
 
             children = []
