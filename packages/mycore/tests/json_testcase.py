@@ -27,3 +27,12 @@ class JsonTestCase(unittest.TestCase):
                 f"{expected_str}\n"
             )
             self.fail(message)
+
+class FakeLoader:
+    def __init__(self, files):
+        self.files = files
+
+    def __call__(self, path):
+        if path not in self.files:
+            raise Exception(f"File not found: {path}")
+        return self.files[path]

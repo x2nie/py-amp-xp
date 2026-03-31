@@ -120,9 +120,22 @@ def declarative(tree):
             output["children"].append(node)
 
         elif node["type"] == "include":
+            paths = []
+
+            # subject (multiline style)
+            if node.get("subject"):
+                paths.append(node["subject"])
+
+            # args (kalau suatu saat dipakai lagi)
+            paths.extend(node.get("args", []))
+
+            # children (kalau indent style dipakai)
+            for w in node.get("children", []):
+                paths.extend(w.get("tokens", []))
+
             output["children"].append({
-                "type": node["type"],
-                "children": node["args"]
+                "type": "include",
+                "children": paths
             })
 
         else:
@@ -187,4 +200,40 @@ def resolve(ast, registry):
     for node in ast.get("children", []):
         if node.get("type") != "type":
             node["schema"] = registry.get(node["type"])
+    return ast
+
+def resolve_include(ast, loader, visited=None):
+    """
+    dependency resolver.
+    loader(path) -> text
+    """
+
+    if visited is None:
+        visited = set()
+
+    new_children = []
+
+    for node in ast.get("children", []):
+        if node.get("type") == "include":
+            for path in node.get("children", []):
+                if path in visited:
+                    raise Exception(f"Circular include detected: {path}")
+
+                visited.add(path)
+
+                text = loader(path)
+
+                sub_ast = declarative(structure(lex(text)))
+                sub_ast = resolve_include(sub_ast, loader, visited)
+
+                # 🔥 merge registry
+                ast["registry"].update(sub_ast.get("registry", {}))
+
+                # 🔥 merge children
+                new_children.extend(sub_ast.get("children", []))
+
+        else:
+            new_children.append(node)
+
+    ast["children"] = new_children
     return ast
