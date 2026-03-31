@@ -139,54 +139,11 @@ def declarative(tree):
             })
 
         else:
-            schema = registry.get(node["type"])
-            if not schema:
-                continue
-
-            # parts = re.split(r"\s+", str(node["subject"]))
-            parts = [node["subject"]] + node.get("args", [])
-            name = parts[0]
-
-            props = {}
-            i = 1
-            while i < len(parts):
-                key = parts[i]
-                i += 1
-                arity = len(schema.get(key, []))
-
-                if arity > 0:
-                    # props[key] = list(map(int, parts[i:i + arity]))
-                    props[key] = parts[i:i + arity]
-                i += arity
-
-            children = []
-            for w in node["children"]:
-                toks = w["tokens"]
-                target = toks[0]
-
-                p = {}
-                i = 1
-                while i < len(toks):
-                    key = toks[i]
-                    i += 1
-                    arity = len(schema.get(key, []))
-
-                    if arity > 0:
-                        p[key] = toks[i:i + arity]
-                    i += arity
-
-                children.append({
-                    "type": node["type"] + ".child",
-                    "target": target,
-                    "props": p,
-                    "children": []
-                })
-
             output["children"].append({
                 "type": node["type"],
-                "name": name,
-                "props": props,
-                "children": children
+                "subject": node.get("subject"),
+                "args": node.get("args", []),
+                "children": node.get("children", [])
             })
 
     return output
@@ -197,9 +154,68 @@ def collect_types(ast):
 
 
 def resolve(ast, registry):
+    new_children = []
+
     for node in ast.get("children", []):
-        if node.get("type") != "type":
-            node["schema"] = registry.get(node["type"])
+        t = node.get("type")
+
+        if t in ("include", "skin"):
+            new_children.append(node)
+            continue
+
+        schema = registry.get(t)
+        if not schema:
+            continue  # atau nanti bisa jadi error
+
+        parts = [node.get("subject")] + node.get("args", [])
+        name = parts[0]
+
+        props = {}
+        i = 1
+        while i < len(parts):
+            key = parts[i]
+            i += 1
+            arity = len(schema.get(key, []))
+
+            if arity > 0:
+                props[key] = parts[i:i + arity]
+            i += arity
+
+        children = []
+        for w in node.get("children", []):
+            toks = w.get("tokens", [])
+            if not toks:
+                continue
+
+            target = toks[0]
+
+            p = {}
+            i = 1
+            while i < len(toks):
+                key = toks[i]
+                i += 1
+                arity = len(schema.get(key, []))
+
+                if arity > 0:
+                    p[key] = toks[i:i + arity]
+                i += arity
+
+            children.append({
+                "type": t + ".child",
+                "target": target,
+                "props": p,
+                "children": []
+            })
+
+        new_children.append({
+            "type": t,
+            "name": name,
+            "props": props,
+            "children": children,
+            "schema": schema
+        })
+
+    ast["children"] = new_children
     return ast
 
 def resolve_include(ast, loader, visited=None):
