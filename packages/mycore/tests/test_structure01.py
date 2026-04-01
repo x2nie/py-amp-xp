@@ -21,10 +21,12 @@ class TestStructure(JsonTestCase):
                     "type": "type",
                     "subject": "font.bitmap",
                     "args": [],
+                    "line": 2,
                     "children": [
                         {
                         "kind": "Words",
                         "tokens": ["size", "int"],
+                        "line": 4,
                         "children": []
                         }
                     ]

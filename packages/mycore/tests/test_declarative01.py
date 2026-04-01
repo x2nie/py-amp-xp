@@ -40,6 +40,7 @@ class TestDeclarative(JsonTestCase):
             {
                 "type": "glyph",
                 "subject": "A",
+                "line": 7,
                  "args": [
                     "width",
                     10,
@@ -72,11 +73,13 @@ class TestDeclarative(JsonTestCase):
             {
                 "kind": "Words",
                 "tokens": ["B", "width", 5, "height", 6],
+                "line": 9,
                 "children": []
             },
             {
                 "kind": "Words",
                 "tokens": ["C", "width", 7, "height", 8],
+                "line": 10,
                 "children": []
             }
         ]
@@ -94,7 +97,8 @@ class TestDeclarative(JsonTestCase):
                 "args": [],
                 "children": [],
                 "subject": "something",
-                "type": "unknown"
+                "type": "unknown",
+                "line": 2
             }
         ]""")
 

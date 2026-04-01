@@ -1,4 +1,4 @@
-import re
+# import re
 
 
 def lex(text):
@@ -14,9 +14,12 @@ def lex(text):
             skips = len(line) - len(line.lstrip())
 
         # remove comment after "
-        line = re.sub(r'".*$', '', line)
+        # line = re.sub(r'".*$', '', line)
+        if '"' in line:
+            line = line[:line.index('"')]
 
-        indent = ( -skips + len(re.match(r'^\s*', line).group(0))) // 4
+        # indent = ( -skips + len(re.match(r'^\s*', line).group(0))) // 4
+        indent = ( -skips + len(line) - len(line.lstrip())) // 4
         raw = line.strip()
 
         if raw.startswith('@'):
@@ -114,7 +117,12 @@ def declarative(tree):
         if node["type"] == "type":
             schema = {}
             for w in node["children"]:
-                key, *types = w["tokens"]
+                # key, *types = w["tokens"]
+                # key = w["tokens"][0]
+                # types = w["tokens"][1:]
+                tokens = w["tokens"]
+                key = tokens[0] if tokens else None
+                types = tokens[1:] if len(tokens) > 1 else []
                 schema[key] = types
             registry[node["subject"]] = schema
 

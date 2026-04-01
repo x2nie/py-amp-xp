@@ -1,5 +1,5 @@
 import unittest
-from src.mycore.calc import discount
+from src.calc import discount
 
 class TestCalc(unittest.TestCase):
     def test_discount(self):

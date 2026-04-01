@@ -46,6 +46,7 @@ class TestResolveSemantic(JsonTestCase):
                     "height": [20]
                 },
                 "children": [],
+                "errors": [],
                 "schema": {
                     "width": ["int"],
                     "height": ["int"]
@@ -79,6 +80,7 @@ class TestResolveSemantic(JsonTestCase):
                     "width": [5],
                     "height": [6]
                 },
+                "errors": [],
                 "children": []
             },
             {
@@ -88,6 +90,7 @@ class TestResolveSemantic(JsonTestCase):
                     "width": [7],
                     "height": [8]
                 },
+                "errors": [],
                 "children": []
             }
         ]
@@ -145,6 +148,7 @@ class TestResolveSemantic(JsonTestCase):
                     "width": [5]
                 },
                 "children": [],
+                "errors": [],
                 "schema": {
                     "width": ["int"]
                 }
@@ -183,6 +187,7 @@ class TestResolveSemantic(JsonTestCase):
                     "width": [10]
                 },
                 "children": [],
+                "errors": [],
                 "schema": {
                     "width": ["int"]
                 }
