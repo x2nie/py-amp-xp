@@ -1,5 +1,9 @@
 {
   "name": "mycore",
   "version": "1.0.0",
-  "main": "dist/mycore.js"
+  "main": "dist/mycore.js",
+  "scripts": {
+    "build": "python3.10 -m transcrypt -e --outdir ../../dist src/mycore/parser.py",
+    "build:dev": "python3.10 -m transcrypt -b -e -m -n --outdir ../../dist src/mycore/parser.py"
+  }
 }
