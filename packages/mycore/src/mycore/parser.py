@@ -78,14 +78,14 @@ def structure(tokens):
             active_decorator["args"].extend(t["tokens"])
             continue
 
-        if (
-            active_decorator["subject"] is None and
-            t["indent"] == stack[0]["indent"]
-        ):
-            toks = t["tokens"][:]
-            active_decorator["subject"] = toks.pop(0)
-            active_decorator["args"] = toks
-            continue
+        # if (
+        #     active_decorator["subject"] is None and
+        #     t["indent"] == stack[0]["indent"]
+        # ):
+        #     toks = t["tokens"][:]
+        #     active_decorator["subject"] = toks.pop(0)
+        #     active_decorator["args"] = toks
+        #     continue
 
         while stack and t["indent"] <= stack[-1]["indent"]:
             stack.pop()
@@ -115,16 +115,19 @@ def declarative(tree):
 
     for node in tree["children"]:
         if node["type"] == "type":
-            schema = {}
-            for w in node["children"]:
-                # key, *types = w["tokens"]
-                # key = w["tokens"][0]
-                # types = w["tokens"][1:]
-                tokens = w["tokens"]
-                key = tokens[0] if tokens else None
-                types = tokens[1:] if len(tokens) > 1 else []
-                schema[key] = types
-            registry[node["subject"]] = schema
+            for type_def in node.get("children", []):
+                if type_def.get("kind") != "Words": continue
+                toks = type_def.get("tokens", [])
+                if not toks: continue
+                subject = toks[0]
+                
+                schema = {}
+                for w in type_def.get("children", []):
+                    tokens = w.get("tokens", [])
+                    key = tokens[0] if tokens else None
+                    types = tokens[1:] if len(tokens) > 1 else []
+                    schema[key] = types
+                registry[subject] = schema
 
         elif node["type"] == "skin":
             output["children"].append(node)
@@ -149,13 +152,22 @@ def declarative(tree):
             })
 
         else:
-            output["children"].append({
-                "type": node["type"],
-                "subject": node.get("subject"),
-                "args": node.get("args", []),
-                "line": node.get("line"),
-                "children": node.get("children", [])
-            })
+            for w in node.get("children", []):
+                if w.get("kind") != "Words":
+                    continue
+
+                toks = w.get("tokens", [])
+                if not toks:
+                    output["children"].append({'skip!': 'has no toks'})
+                    continue
+
+                output["children"].append({
+                    "type": node["type"],
+                    "subject": toks[0],
+                    "args": toks[1:],
+                    "children": w.get("children", []),
+                    "line": w.get("line")
+                })
 
     return output
 

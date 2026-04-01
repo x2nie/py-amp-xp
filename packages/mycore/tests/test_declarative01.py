@@ -40,7 +40,7 @@ class TestDeclarative(JsonTestCase):
             {
                 "type": "glyph",
                 "subject": "A",
-                "line": 7,
+                "line": 8,
                  "args": [
                     "width",
                     10,
@@ -68,17 +68,26 @@ class TestDeclarative(JsonTestCase):
         # ast = resolve(ast, ast["registry"])
 
 
-        self.assertEqualJson(ast["children"][0]["children"], """
+        self.assertEqualJson(ast["children"], """
         [
             {
-                "kind": "Words",
-                "tokens": ["B", "width", 5, "height", 6],
+                "type": "glyph",
+                "subject": "A",
+                "args": ["width", 10, "height", 20],
+                "line": 8,
+                "children": []
+            },
+            {
+                "type": "glyph",
+                "subject": "B",
+                "args": ["width", 5, "height", 6],
                 "line": 9,
                 "children": []
             },
             {
-                "kind": "Words",
-                "tokens": ["C", "width", 7, "height", 8],
+                "type": "glyph",
+                "subject": "C",
+                "args": ["width", 7, "height", 8],
                 "line": 10,
                 "children": []
             }
@@ -98,7 +107,7 @@ class TestDeclarative(JsonTestCase):
                 "children": [],
                 "subject": "something",
                 "type": "unknown",
-                "line": 2
+                "line": 3
             }
         ]""")
 
@@ -132,6 +141,48 @@ class TestDeclarative(JsonTestCase):
         self.assertEqual(len(ast["children"]), 1)
         self.assertEqual(ast["children"][0]["type"], "skin")
 
+    def test_multi_button_instances(self):
+        text = """
+        @type
+        button
+            at int int
+
+        @button
+        btnPlay at 16 88
+        btnPause at 39 88
+        btnStop at 62 88
+        """
+
+        ast = declarative(structure(lex(text)))
+
+        self.assertEqual(len(ast["children"]), 3)
+    
+        self.assertEqualJson(ast["children"], """
+        [
+            {
+                "type": "button",
+                "subject": "btnPlay",
+                "args": ["at", 16, 88],
+                "line": 7,
+                "children": []
+            },
+            {
+                "type": "button",
+                "subject": "btnPause",
+                "args": ["at", 39, 88],
+                "line": 8,
+                "children": []
+            },
+            {
+                "type": "button",
+                "subject": "btnStop",
+                "args": ["at", 62, 88],
+                "line": 9,
+                "children": []
+            }
+        ]
+        """)
+        
     # def test_arity_handling(self):
     #     text = """
     #     @type
